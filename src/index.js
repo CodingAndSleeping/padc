@@ -38,6 +38,14 @@ if (packages.length === 0) {
   process.exit(1);
 }
 
+try {
+  // 执行安装命令
+  execSync(`pnpm add ${passThroughArgs.join(' ')}`, { stdio: 'inherit' });
+} catch (err) {
+  console.error('❌ Failed to install packages with pnpm.');
+  process.exit(1);
+}
+
 // 如果不存在pnpm-workspace.yaml文件，则创建一个空的
 if (!existsSync(pnpmWorkspaceYamlPath)) {
   writeFileSync(pnpmWorkspaceYamlPath, '');
@@ -46,14 +54,6 @@ if (!existsSync(pnpmWorkspaceYamlPath)) {
 // 解析 pnpm-workspace.yaml 文件
 const pnpmWorkspaceYaml =
   YAML.parse(readFileSync(pnpmWorkspaceYamlPath, 'utf-8')) || {};
-
-try {
-  // 执行安装命令
-  execSync(`pnpm add ${passThroughArgs.join(' ')}`, { stdio: 'inherit' });
-} catch (err) {
-  console.error('❌ Failed to install packages with pnpm.');
-  process.exit(1);
-}
 
 // 读取 package.json 文件
 const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
