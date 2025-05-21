@@ -1,0 +1,25 @@
+{
+  "name": "padc",
+  "version": "1.1.0",
+  "description": "Wraps pnpm add and injects dependencies into pnpm-workspace.yaml catalogs",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "padc": "src/index.js"
+  },
+  "keywords": [
+    "pnpm",
+    "add",
+    "catalog",
+    "catalogs",
+    "PNPM Catalog Lens"
+  ],
+  "author": "CondingAndSleeping",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "^1.2.8",
+    "yaml": "^2.8.0"
+  }
+}
