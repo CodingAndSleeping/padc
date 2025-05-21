@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-import minimist from 'minimist';
-import YAML from 'yaml';
+
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+
+import minimist from 'minimist';
+import YAML from 'yaml';
+import npa from 'npm-package-arg';
 
 const args = process.argv.slice(2);
 
@@ -75,7 +78,7 @@ try {
     : pkgJson.dependencies;
 
   for (let i = 0; i < packages.length; i++) {
-    const packageName = packages[i].split('@')[0];
+    const packageName = npa(packages[i]).name;
     // 获取版本
 
     const packageVersion = dependencies[packageName]?.version;

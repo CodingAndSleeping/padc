@@ -1,6 +1,6 @@
 {
   "name": "padc",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Wraps pnpm add and injects dependencies into pnpm-workspace.yaml catalogs",
   "type": "module",
   "scripts": {
@@ -20,6 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "minimist": "catalog:default",
+    "npm-package-arg": "catalog:default",
     "yaml": "catalog:default"
   }
 }
