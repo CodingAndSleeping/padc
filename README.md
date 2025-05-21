@@ -11,6 +11,12 @@
 
 ## 🚀 Usage
 
+### Install
+
+```zsh
+pnpm i -g padc
+```
+
 ### Install a package into a catalog use `padc <package> [-c <catalog>]`
 
 ```bash
