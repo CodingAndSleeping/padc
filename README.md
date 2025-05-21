@@ -11,13 +11,15 @@
 
 ## 🚀 Usage
 
-### Install a package into a catalog use `padc <package> -c <catalog>`
+### Install a package into a catalog use `padc <package> [-c <catalog>]`
 
 ```bash
 padc lodash -c utils
 ```
 
 This will add `lodash` to the `utils` catalog in `pnpm-workspace.yaml` and inject `catalog:utils` into `package.json`.
+
+if you don't specify a catalog, `padc` will add the package to the default catalog in `pnpm-workspace.yaml`.
 
 ```yaml
 # pnpm-workspace.yaml

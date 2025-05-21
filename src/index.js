@@ -40,7 +40,9 @@ if (packages.length === 0) {
 
 try {
   // 执行安装命令
-  execSync(`pnpm add ${passThroughArgs.join(' ')}`, { stdio: 'inherit' });
+  execSync(`pnpm add ${passThroughArgs.join(' ')}`, {
+    stdio: 'inherit',
+  });
 } catch (err) {
   console.error('❌ Failed to install packages with pnpm.');
   process.exit(1);
@@ -58,20 +60,25 @@ const pnpmWorkspaceYaml =
 // 读取 package.json 文件
 const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
 
-if (pkgJson) {
-  // 获取依赖项
-  const dependencies = isDev ? pkgJson.devDependencies : pkgJson.dependencies;
+try {
+  const output = execSync('pnpm list --json', {
+    encoding: 'utf-8',
+  });
+  const packageVersionJson = JSON.parse(output);
+
+  const dependencies = isDev
+    ? packageVersionJson[0].devDependencies
+    : packageVersionJson[0].dependencies;
+
+  const pkgDependencies = isDev
+    ? pkgJson.devDependencies
+    : pkgJson.dependencies;
 
   for (let i = 0; i < packages.length; i++) {
-    const packageName = packages[i];
+    const packageName = packages[i].split('@')[0];
     // 获取版本
-    const packageVersion = dependencies?.[packageName];
-    if (!packageVersion) {
-      console.warn(
-        `⚠️  Package "${packageName}" was not found in dependencies. Skipped catalog assignment.`,
-      );
-      continue;
-    }
+
+    const packageVersion = dependencies[packageName]?.version;
 
     // 更新 pnpmWorkspaceYaml
     if (catalogName) {
@@ -80,14 +87,17 @@ if (pkgJson) {
         pnpmWorkspaceYaml.catalogs[catalogName] || {};
       pnpmWorkspaceYaml.catalogs[catalogName][packageName] = packageVersion;
       // 更新 dependencies
-      dependencies[packageName] = `catalog:${catalogName}`;
+      pkgDependencies[packageName] = `catalog:${catalogName}`;
     } else {
       pnpmWorkspaceYaml.catalog = pnpmWorkspaceYaml.catalog || {};
       pnpmWorkspaceYaml.catalog[packageName] = packageVersion;
       // 更新 dependencies
-      dependencies[packageName] = `catalog:`;
+      pkgDependencies[packageName] = `catalog:default`;
     }
   }
+} catch (err) {
+  console.error('❌ Failed to get package version with pnpm.');
+  process.exit(1);
 }
 // 写入 pnpm-workspace.yaml 文件
 writeFileSync(pnpmWorkspaceYamlPath, YAML.stringify(pnpmWorkspaceYaml));
