@@ -1,6 +1,6 @@
 {
   "name": "padc",
-  "version": "1.4.10",
+  "version": "1.5.0",
   "description": "Wraps pnpm add and injects dependencies into pnpm-workspace.yaml catalogs",
   "type": "module",
   "scripts": {
@@ -18,10 +18,12 @@
   ],
   "author": "CondingAndSleeping",
   "license": "MIT",
+  "repository": "https://github.com/CodingAndSleeping/padc",
   "dependencies": {
-    "minimist": "catalog:default",
-    "npm-package-arg": "catalog:default",
-    "padc": "link:",
-    "yaml": "catalog:default"
+    "chalk": "catalog:",
+    "minimist": "catalog:",
+    "npm-package-arg": "catalog:",
+    "ora": "catalog:",
+    "yaml": "catalog:"
   }
 }

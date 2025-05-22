@@ -8,6 +8,7 @@ import minimist from 'minimist';
 import YAML from 'yaml';
 import npa from 'npm-package-arg';
 import ora from 'ora';
+import log from './log.js';
 
 const args = process.argv.slice(2);
 
@@ -31,14 +32,14 @@ const pkgJsonPath = join(process.cwd(), 'package.json');
 const pnpmWorkspaceYamlPath = join(process.cwd(), 'pnpm-workspace.yaml');
 
 if (!existsSync(pkgJsonPath)) {
-  console.error(
-    '❌ package.json not found in current directory, please run this command in the root of your project: pnpm init -y',
+  log.error(
+    'package.json not found in current directory, please run this command in the root of your project: pnpm init -y',
   );
   process.exit(1);
 }
 
 if (packages.length === 0) {
-  console.error('❌ Please specify packages to install');
+  log.error('Please specify packages to install');
   process.exit(1);
 }
 
@@ -74,8 +75,9 @@ try {
       } else {
         if (!pnpmWorkspaceYaml.catalogs[catalogName][packageName]) {
           const latestVersion = getLatestVersion(packageName);
-          pnpmWorkspaceYaml.catalogs[catalogName][packageName] =
-            latestVersion || '*';
+          pnpmWorkspaceYaml.catalogs[catalogName][packageName] = latestVersion
+            ? '^' + latestVersion
+            : '*';
         }
       }
       // 更新 dependencies
@@ -88,7 +90,9 @@ try {
       } else {
         if (!pnpmWorkspaceYaml.catalog[packageName]) {
           const latestVersion = getLatestVersion(packageName);
-          pnpmWorkspaceYaml.catalog[packageName] = latestVersion || '*';
+          pnpmWorkspaceYaml.catalog[packageName] = latestVersion
+            ? '^' + latestVersion
+            : '*';
         }
       }
       // 更新 dependencies
@@ -96,7 +100,7 @@ try {
     }
   }
 } catch (err) {
-  console.error('❌ Failed to get package version with pnpm.', err);
+  log.error('Failed to get package version with pnpm.');
   process.exit(1);
 }
 // 写入 pnpm-workspace.yaml 文件
@@ -111,13 +115,13 @@ try {
     stdio: 'inherit',
   });
 
-  console.log(
-    `✅ Installed ${packages.join(', ')}${
-      catalogName ? `into catalog: ${catalogName}` : 'catalog: default'
+  log.success(
+    `Installed ${packages.join(', ')} ${
+      catalogName ? `into catalog: ${catalogName}` : 'into catalog: default'
     }`,
   );
 } catch (err) {
-  console.error('❌ Failed to install packages with pnpm.');
+  log.error('Failed to install packages with pnpm.');
   process.exit(1);
 }
 
