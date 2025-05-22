@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import minimist from 'minimist';
 import YAML from 'yaml';
 import npa from 'npm-package-arg';
+import ora from 'ora';
 
 const args = process.argv.slice(2);
 
@@ -41,21 +42,10 @@ if (packages.length === 0) {
   process.exit(1);
 }
 
-try {
-  // 执行安装命令
-  execSync(`pnpm add ${passThroughArgs.join(' ')}`, {
-    stdio: 'inherit',
-  });
-} catch (err) {
-  console.error('❌ Failed to install packages with pnpm.');
-  process.exit(1);
-}
-
 // 如果不存在pnpm-workspace.yaml文件，则创建一个空的
 if (!existsSync(pnpmWorkspaceYamlPath)) {
   writeFileSync(pnpmWorkspaceYamlPath, '');
 }
-
 // 解析 pnpm-workspace.yaml 文件
 const pnpmWorkspaceYaml =
   YAML.parse(readFileSync(pnpmWorkspaceYamlPath, 'utf-8')) || {};
@@ -64,42 +54,49 @@ const pnpmWorkspaceYaml =
 const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
 
 try {
-  const output = execSync('pnpm list --json', {
-    encoding: 'utf-8',
-  });
-  const packageVersionJson = JSON.parse(output);
-
-  const dependencies = isDev
-    ? packageVersionJson[0].devDependencies
-    : packageVersionJson[0].dependencies;
-
   const pkgDependencies = isDev
-    ? pkgJson.devDependencies
-    : pkgJson.dependencies;
+    ? pkgJson.devDependencies || (pkgJson.devDependencies = {})
+    : pkgJson.dependencies || (pkgJson.dependencies = {});
 
   for (let i = 0; i < packages.length; i++) {
-    const packageName = npa(packages[i]).name;
-    // 获取版本
+    const { name: packageName, raw } = npa(packages[i]);
 
-    const packageVersion = dependencies[packageName]?.version;
+    const packageVersion = raw.replace(packageName, '').split('@')[1];
 
     // 更新 pnpmWorkspaceYaml
     if (catalogName) {
       pnpmWorkspaceYaml.catalogs = pnpmWorkspaceYaml.catalogs || {};
       pnpmWorkspaceYaml.catalogs[catalogName] =
         pnpmWorkspaceYaml.catalogs[catalogName] || {};
-      pnpmWorkspaceYaml.catalogs[catalogName][packageName] = packageVersion;
+
+      if (packageVersion) {
+        pnpmWorkspaceYaml.catalogs[catalogName][packageName] = packageVersion;
+      } else {
+        if (!pnpmWorkspaceYaml.catalogs[catalogName][packageName]) {
+          const latestVersion = getLatestVersion(packageName);
+          pnpmWorkspaceYaml.catalogs[catalogName][packageName] =
+            latestVersion || '*';
+        }
+      }
       // 更新 dependencies
       pkgDependencies[packageName] = `catalog:${catalogName}`;
     } else {
       pnpmWorkspaceYaml.catalog = pnpmWorkspaceYaml.catalog || {};
-      pnpmWorkspaceYaml.catalog[packageName] = packageVersion;
+
+      if (packageVersion) {
+        pnpmWorkspaceYaml.catalog[packageName] = packageVersion;
+      } else {
+        if (!pnpmWorkspaceYaml.catalog[packageName]) {
+          const latestVersion = getLatestVersion(packageName);
+          pnpmWorkspaceYaml.catalog[packageName] = latestVersion || '*';
+        }
+      }
       // 更新 dependencies
-      pkgDependencies[packageName] = `catalog:default`;
+      pkgDependencies[packageName] = 'catalog:';
     }
   }
 } catch (err) {
-  console.error('❌ Failed to get package version with pnpm.');
+  console.error('❌ Failed to get package version with pnpm.', err);
   process.exit(1);
 }
 // 写入 pnpm-workspace.yaml 文件
@@ -108,8 +105,31 @@ writeFileSync(pnpmWorkspaceYamlPath, YAML.stringify(pnpmWorkspaceYaml));
 // 更新 package.json
 writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2));
 
-console.log(
-  `✅ Installed ${packages.join(', ')}${
-    catalogName ? ` into catalog: ${catalogName}` : 'catalog: default'
-  }`,
-);
+try {
+  // 执行安装命令
+  execSync(`pnpm add ${passThroughArgs.join(' ')}`, {
+    stdio: 'inherit',
+  });
+
+  console.log(
+    `✅ Installed ${packages.join(', ')}${
+      catalogName ? `into catalog: ${catalogName}` : 'catalog: default'
+    }`,
+  );
+} catch (err) {
+  console.error('❌ Failed to install packages with pnpm.');
+  process.exit(1);
+}
+
+function getLatestVersion(packageName) {
+  const spinner = ora(`Fetching latest version of ${packageName}...`).start();
+  try {
+    const latestVersion = execSync(`npm view ${packageName} version`, {
+      encoding: 'utf-8',
+    }).trim();
+    spinner.succeed(`Got ${packageName}@${latestVersion}`);
+    return latestVersion;
+  } catch (err) {
+    spinner.fail(`Failed to get ${packageName} latest version`);
+  }
+}
