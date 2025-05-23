@@ -1,13 +1,14 @@
-# padc
+# 🧩 padc
 
 > 📦 CLI wrapper for `pnpm add` with automatic catalog injection for `pnpm-workspace.yaml`.
 
 ## ✨ Features
 
-- Automatically updates `pnpm-workspace.yaml` catalogs
-- Injects `catalog:<name>` reference into `package.json`
-- Supports full `pnpm add` options passthrough
-- Easy monorepo dependency classification
+- 🧠 **Automatic catalog injection** into `pnpm-workspace.yaml`
+- 📦 **References** packages in `package.json` using `catalog:<name>`
+- 🚀 **Full `pnpm add` options passthrough** (e.g., `--save-dev`, `--filter`, etc.)
+- 🏷️ **Custom or interactive catalog selection**
+- ⚡ **Parallel version resolution** for faster installs
 
 ## 🚀 Usage
 
@@ -17,15 +18,27 @@
 pnpm i -g padc
 ```
 
-### Install a package into a catalog use `padc <package> [-c <catalog>]`
+### Install a package into a catalog use `-c <catalog>`
 
-```bash
+```zsh
 padc lodash -c utils
 ```
 
 This will add `lodash` to the `utils` catalog in `pnpm-workspace.yaml` and inject `catalog:utils` into `package.json`.
 
-if you don't specify a catalog, `padc` will add the package to the default catalog in `pnpm-workspace.yaml`.
+### Install a package without specifying a catalog
+
+```zsh
+padc lodash
+```
+
+You’ll be prompted to:
+
+- Select default catalog
+- Or select an existing catalog
+- Or create a new one
+
+## 🤔 Result
 
 ```yaml
 # pnpm-workspace.yaml
