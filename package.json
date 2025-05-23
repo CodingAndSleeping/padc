@@ -21,6 +21,7 @@
   "repository": "https://github.com/CodingAndSleeping/padc",
   "dependencies": {
     "chalk": "catalog:",
+    "inquirer": "catalog:",
     "minimist": "catalog:",
     "npm-package-arg": "catalog:",
     "ora": "catalog:",
