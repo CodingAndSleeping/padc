@@ -179,6 +179,7 @@ function getVersion(pnpmWorkspaceYaml, raw, catalogName, packageName) {
 
     return version;
   } catch (err) {
+    console.log(err.stderr)
     process.exit(1)
   }
 }
@@ -193,8 +194,7 @@ function getPnpmWorkspaceYamlVersion(pnpmWorkspaceYaml, catalogName, name) {
 
 function getLatestVersion(packageName) {
   const latestVersion = execSync(`npm view ${packageName} version`, {
-    encoding: 'utf-8',
-    stdio: 'inherit',
+    encoding: 'utf-8'
   }).trim();
 
   return latestVersion;
