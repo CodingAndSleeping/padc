@@ -16,7 +16,39 @@ import log from './log.js';
 const args = process.argv.slice(2);
 
 // 格式化参数
-const foramtArgs = minimist(args);
+const foramtArgs = minimist(args, {
+  boolean: [
+    '--color',
+    'E',
+    '--save-exact',
+    'save-workspace-protocol',
+    'aggregate-output',
+    'allow-build',
+    'config',
+    'g',
+    'global',
+    'global-dir',
+    'h',
+    'help',
+    'ignore-scripts',
+    'offline',
+    'prefer-offline',
+    'r',
+    'recursive',
+    'D',
+    'save-dev',
+    'O',
+    'save-optional',
+    'save-peer',
+    'p',
+    'save-prod',
+    'stream',
+    'use-stderr',
+    'workspace',
+    'w',
+    'workspace-root',
+  ],
+})
 
 // 是否是开发依赖
 const isDev = foramtArgs.D || foramtArgs['save-dev'];
