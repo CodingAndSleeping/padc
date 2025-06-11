@@ -1,3 +1,5 @@
+English | [中文](https://github.com/CodingAndSleeping/padc/blob/main/README-zh.md)
+
 # 🧩 padc
 
 > 📦 CLI wrapper for `pnpm add` with automatic catalog injection for `pnpm-workspace.yaml`.
